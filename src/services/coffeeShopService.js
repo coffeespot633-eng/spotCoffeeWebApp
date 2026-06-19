@@ -1,21 +1,49 @@
 import { db } from "../lib/firebase";
-import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 
 // DATA KONFIGURASI CLOUDINARY
-const CLOUDINARY_CLOUD_NAME = "ddbalrkqf"; 
+const CLOUDINARY_CLOUD_NAME = "ddbalrkqf";
 const CLOUDINARY_UPLOAD_PRESET = "spot_coffee_preset";
+
+const uploadImage = async (file) => {
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+
+  const cloudData = await response.json();
+
+  return cloudData.secure_url;
+};
 
 export const coffeeShopService = {
   // 1. Fungsi mengambil semua data Coffee Shop
   getAll: async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "coffeeShops"));
-      
+
       const shops = querySnapshot.docs.map((doc) => ({
-        id: doc.id,         // Mengambil ID asli dari dokumen Firestore
-        ...doc.data(),      // Mengambil seluruh field data di dalamnya
+        id: doc.id, // Mengambil ID asli dari dokumen Firestore
+        ...doc.data(), // Mengambil seluruh field data di dalamnya
       }));
-      
+
       return shops;
     } catch (error) {
       console.error("Gagal mengambil daftar coffee shop:", error);
@@ -32,7 +60,7 @@ export const coffeeShopService = {
 
       const docRef = doc(db, "coffeeShops", id);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         return { id: docSnap.id, ...docSnap.data() };
       } else {
@@ -46,155 +74,134 @@ export const coffeeShopService = {
   // 3. Fungsi menambah data Coffee Shop baru (Admin)
   create: async (data, imageFile) => {
     let imageUrl = "";
-    
+    let favoriteMenus = [];
+
+    const validMenus =
+      data.favoriteMenus?.filter((menu) => menu.name?.trim()) || [];
+
+    if (validMenus.length > 0) {
+      favoriteMenus = await Promise.all(
+        validMenus.map(async (menu) => {
+          let menuImageUrl = "";
+
+          if (menu.imageFile) {
+            menuImageUrl = await uploadImage(menu.imageFile);
+          }
+
+          return {
+            name: menu.name,
+            price: menu.price,
+            imageUrl: menuImageUrl,
+          };
+        }),
+      );
+    }
+
     // Proses upload gambar ke Cloudinary jika ada file yang dipilih
     if (imageFile) {
-      const formData = new FormData();
-      formData.append("file", imageFile);
-      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-
-      try {
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-        const cloudData = await response.json();
-        imageUrl = cloudData.secure_url; 
-      } catch (error) {
-        console.error("Gagal mengunggah gambar ke Cloudinary:", error);
-        throw new Error("Gagal mengunggah gambar ke server.", { cause: error });
-      }
+      imageUrl = await uploadImage(imageFile);
     }
 
     // Simpan data lengkap ke Firebase Firestore
-const docRef = await addDoc(
-  collection(db, "coffeeShops"),
-  {
-    name: data.name,
+    const docRef = await addDoc(collection(db, "coffeeShops"), {
+      name: data.name,
 
-    description: data.description,
+      description: data.description,
 
-    atmosphere:
-      data.atmosphere || "",
+      atmosphere: data.atmosphere || "",
 
-    favoriteMenu:
-      data.favoriteMenu || "",
+      favoriteMenus: favoriteMenus || [],
 
-    address: data.address,
+      address: data.address,
 
-    operatingHours:
-      data.operatingHours,
+      operatingHours: data.operatingHours,
 
-    mapsLink: data.mapsLink,
+      mapsLink: data.mapsLink,
 
-    instagramLink:
-      data.instagramLink || "",
+      instagramLink: data.instagramLink || "",
 
-    tiktokLink:
-      data.tiktokLink || "",
+      tiktokLink: data.tiktokLink || "",
 
-    priceRange:
-      data.priceRange,
+      priceRange: data.priceRange,
 
-    facilities:
-      data.facilities || [],
+      facilities: data.facilities || [],
 
-    suitableFor:
-      data.suitableFor || [],
+      suitableFor: data.suitableFor || [],
 
-    wifi:
-      data.wifi || false,
+      wifi: data.wifi || false,
 
-    powerSocket:
-      data.powerSocket || false,
+      powerSocket: data.powerSocket || false,
 
-    crowdLevel:
-      data.crowdLevel || "tenang",
+      wifiProvider: data.wifiProvider || "",
 
-    featured:
-      data.featured || false,
+      socketCount: data.socketCount || "",
 
-    premium:
-      data.premium || false,
+      crowdLevel: data.crowdLevel || "tenang",
 
-    hasPromo:
-      data.hasPromo || false,
+      featured: data.featured || false,
 
-    hasEvent:
-      data.hasEvent || false,
+      premium: data.premium || false,
 
-    imageUrl:
-      imageUrl || "",
+      hasPromo: data.hasPromo || false,
 
-    createdAt:
-      new Date().toISOString(),
-  }
-);
+      hasEvent: data.hasEvent || false,
+
+      imageUrl: imageUrl || "",
+
+      createdAt: new Date().toISOString(),
+    });
 
     return docRef.id;
   },
 
-  // 4. Fungsi Mengubah/Edit Data Coffee Shop
-update: async (
-  id,
-  updatedData,
-  imageFile
-) => {
-  try {
-    let imageUrl =
-      updatedData.imageUrl || "";
+  update: async (id, updatedData, imageFile) => {
+    try {
+      let imageUrl = updatedData.imageUrl || "";
 
-    if (imageFile) {
-      const formData =
-        new FormData();
+      // Upload foto coffee shop jika diganti
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
+      }
 
-      formData.append(
-        "file",
-        imageFile
-      );
+      // Upload foto menu favorit
+      let favoriteMenus = [];
 
-      formData.append(
-        "upload_preset",
-        CLOUDINARY_UPLOAD_PRESET
-      );
+      const validMenus =
+        updatedData.favoriteMenus?.filter((menu) => menu.name?.trim()) || [];
 
-      const response =
-        await fetch(
-          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
-            method: "POST",
-            body: formData,
-          }
+      if (validMenus.length > 0) {
+        favoriteMenus = await Promise.all(
+          validMenus.map(async (menu) => {
+            let menuImageUrl = menu.imageUrl || "";
+
+            if (menu.imageFile) {
+              menuImageUrl = await uploadImage(menu.imageFile);
+            }
+
+            return {
+              name: menu.name,
+              price: menu.price,
+              imageUrl: menuImageUrl,
+            };
+          }),
         );
+      }
 
-      const cloudData =
-        await response.json();
+      const docRef = doc(db, "coffeeShops", id);
+      const { favoriteMenus: _, ...cleanData } = updatedData;
 
-      imageUrl =
-        cloudData.secure_url;
+      await updateDoc(docRef, {
+        ...cleanData,
+        imageUrl,
+        favoriteMenus,
+      });
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
-
-    const docRef = doc(
-      db,
-      "coffeeShops",
-      id
-    );
-
-    await updateDoc(docRef, {
-      ...updatedData,
-      imageUrl,
-    });
-
-    return true;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-},
-
+  },
   // 5. Fungsi Menghapus Data Coffee Shop
   delete: async (id) => {
     try {
@@ -205,6 +212,5 @@ update: async (
       console.error("Gagal menghapus data:", error);
       throw error;
     }
-  }
-
+  },
 };
