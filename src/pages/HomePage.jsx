@@ -5,7 +5,7 @@ import logo from "../assets/logo.png";
 import BannerSlider from "../components/home/BannerSlider";
 import SectionHeader from "../components/ui/SectionHeader";
 import { Star } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   glassCard,
   glassHover,
@@ -38,6 +38,9 @@ export default function HomePage() {
   const [coffeeShops, setCoffeeShops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [suggestions, setSuggestions] =
+  useState([]);
+  const navigate = useNavigate();
   const featuredShop =
   coffeeShops.find((shop) => shop.featured) ||
   coffeeShops[0];
@@ -58,6 +61,46 @@ export default function HomePage() {
     };
     fetchShops();
   }, []);
+
+  useEffect(() => {
+    if (!search.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    const keyword =
+      search.toLowerCase();
+
+    const result = coffeeShops.filter(
+      (shop) => {
+        const content = [
+          shop.name,
+          shop.address,
+          shop.description,
+
+          ...(shop.facilities || []),
+          ...(shop.suitableFor || []),
+
+          shop.crowdLevel || "",
+
+          shop.wifi ? "wifi" : "",
+          shop.powerSocket
+            ? "stop kontak"
+            : "",
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return content.includes(
+          keyword
+        );
+      }
+    );
+
+    setSuggestions(
+      result.slice(0, 5)
+    );
+  }, [search, coffeeShops]);
 
   const topRatedShops = useMemo(() => {
   return [...coffeeShops]
@@ -172,29 +215,146 @@ export default function HomePage() {
 
             <div className={`mt-8 p-4 ${glassCard}`}>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Cari nama, area, WiFi, outdoor..."
+
+                <div className="relative flex-1">
+
+                  <input
+                    value={search}
+                    onChange={(event) =>
+                      setSearch(event.target.value)
+                    }
+                    placeholder="Cari nama, area, WiFi, outdoor..."
+                    className="
+                    h-14
+                    w-full
+
+                    rounded-2xl
+
+                    border
+                    border-[var(--color-coffee-100)]
+
+                    bg-white
+
+                    px-5
+
+                    text-sm
+                    font-medium
+
+                    outline-none
+
+                    transition
+
+                    focus:border-[var(--color-coffee-400)]
+                    focus:ring-4
+                    focus:ring-[rgba(143,90,47,0.08)]
+                    "
+                  />
+
+                  {suggestions.length > 0 && (
+                    <div
+                      className="
+                      absolute
+                      left-0
+                      right-0
+                      top-16
+
+                      z-50
+
+                      overflow-hidden
+
+                      rounded-2xl
+
+                      border
+                      border-[var(--color-coffee-100)]
+
+                      bg-white
+
+                      shadow-xl
+                      "
+                    >
+                      {suggestions.map((shop) => (
+                        <button
+                          key={shop.id}
+                          onClick={() => {
+                            navigate(
+                              `/coffee-shop/${shop.id}`
+                            );
+                          }}
+                          className="
+                          flex
+                          w-full
+                          items-center
+                          gap-3
+
+                          p-4
+
+                          text-left
+
+                          hover:bg-[var(--color-coffee-50)]
+                          "
+                        >
+                          <img
+                            src={shop.imageUrl}
+                            alt={shop.name}
+                            className="
+                            h-12
+                            w-12
+
+                            rounded-xl
+
+                            object-cover
+                            "
+                          />
+
+                          <div>
+                            <p className="font-bold text-[var(--color-coffee-800)]">
+                              {shop.name}
+                            </p>
+
+                            <p className="text-xs text-stone-500">
+                              {shop.address}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                </div>
+
+                <button
+                  onClick={() => {
+                    const first =
+                      suggestions[0];
+
+                    if (first) {
+                      navigate(
+                        `/coffee-shop/${first.id}`
+                      );
+                    }
+                  }}
                   className="
-                  min-h-12
-                  flex-1
+                  h-14
+
                   rounded-2xl
-                  border
-                  border-white/40
-                  bg-white/70
-                  px-4
+
+                  bg-[var(--color-coffee-700)]
+
+                  px-8
+
                   text-sm
-                  font-semibold
-                  backdrop-blur-xl
-                  outline-none
-                  focus:ring-4
-                  focus:ring-[rgba(143,90,47,0.12)]
+                  font-bold
+
+                  text-white
+
+                  transition
+
+                  hover:bg-[var(--color-coffee-800)]
                   "
-                />
-                <button className="min-h-12 rounded-2xl bg-[var(--color-coffee-700)] px-5 text-sm font-bold text-white">
+                >
                   Cari Spot
                 </button>
+
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {filters.map((filter) => (
@@ -269,9 +429,17 @@ export default function HomePage() {
           >
             <div className="aspect-[16/9] overflow-hidden rounded-t-3xl">
               <img
-                src={shop.imageUrl}
+                src={
+                  shop.imageUrl ||
+                  "/placeholder-coffee.jpg"
+                }
                 alt={shop.name}
-                className="h-full w-full object-cover"
+                className="
+                h-full
+                w-full
+                rounded-xl
+                object-cover
+                "
               />
             </div>
 
