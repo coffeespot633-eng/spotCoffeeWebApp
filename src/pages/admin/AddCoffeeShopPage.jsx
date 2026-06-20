@@ -24,6 +24,7 @@ export default function AddCoffeeShopPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [galleryFiles, setGalleryFiles] = useState([]);
   const [selectedFacilities, setSelectedFacilities] = useState([]);
   const [selectedSuitableFor, setSelectedSuitableFor] = useState([]);
   const [formData, setFormData] = useState({
@@ -144,6 +145,7 @@ export default function AddCoffeeShopPage() {
           suitableFor: selectedSuitableFor,
         },
         imageFile,
+        galleryFiles,
       );
 
       setSuccess("Berhasil menambahkan coffee shop baru.");
@@ -664,6 +666,16 @@ export default function AddCoffeeShopPage() {
               className="w-full rounded-xl border border-dashed border-[var(--color-coffee-200)] bg-[var(--color-cream-50)] p-4 text-sm font-semibold text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--color-coffee-700)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
             />
           </label>
+
+          <label>Galeri Coffee Shop</label>
+
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => setGalleryFiles(Array.from(e.target.files))}
+            className="w-full rounded-xl border border-dashed border-[var(--color-coffee-200)] bg-[var(--color-cream-50)] p-4 text-sm font-semibold text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--color-coffee-700)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
+          />
 
           <div className="flex flex-col-reverse gap-3 border-t border-[var(--color-coffee-100)] pt-5 sm:flex-row sm:justify-end">
             <Button

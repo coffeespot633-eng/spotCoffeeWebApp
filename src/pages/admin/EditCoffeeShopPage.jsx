@@ -13,6 +13,7 @@ import {
   Briefcase,
   Coffee,
   Laptop,
+  ImagePlus,
 } from "lucide-react";
 
 const listFacilities = [
@@ -64,6 +65,9 @@ export default function EditCoffeeShopPage() {
   });
   const [facilities, setFacilities] = useState([]);
   const [imageFile, setImageFile] = useState(null);
+  const [galleryFiles, setGalleryFiles] = useState([]);
+
+  const [galleryPreview, setGalleryPreview] = useState([]);
   const [selectedSuitableFor, setSelectedSuitableFor] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error] = useState("");
@@ -114,6 +118,8 @@ export default function EditCoffeeShopPage() {
           });
           setFacilities(oldData.facilities || []);
           setSelectedSuitableFor(oldData.suitableFor || []);
+
+          setGalleryPreview(oldData.galleryImages || []);
         }
       } catch {
         Swal.fire("Error", "Gagal memuat data lama kafe.", "error");
@@ -144,8 +150,13 @@ export default function EditCoffeeShopPage() {
     try {
       await coffeeShopService.update(
         id,
-        { ...formData, facilities, suitableFor: selectedSuitableFor },
+        {
+          ...formData,
+          facilities,
+          suitableFor: selectedSuitableFor,
+        },
         imageFile,
+        galleryFiles,
       );
       await Swal.fire({
         title: "Tersimpan",
@@ -377,7 +388,8 @@ export default function EditCoffeeShopPage() {
                             hover:bg-[var(--color-coffee-100)]
                             "
                     >
-                      📷 Upload Foto Menu
+                      <ImagePlus size={18} />
+                      Upload Foto Menu
                       <input
                         type="file"
                         accept="image/*"
@@ -430,6 +442,12 @@ export default function EditCoffeeShopPage() {
                       <button
                         type="button"
                         onClick={() => removeMenuField(index)}
+                        className="
+                        text-sm
+                        font-bold
+                        text-red-500
+                        hover:text-red-700
+                        "
                       >
                         Hapus Menu
                       </button>
@@ -569,25 +587,25 @@ export default function EditCoffeeShopPage() {
                 Stop Kontak Tersedia
               </label>
             </div>
+
+            {formData.wifi && (
+              <Input
+                label="Provider WiFi"
+                name="wifiProvider"
+                value={formData.wifiProvider}
+                onChange={handleChange}
+              />
+            )}
+
+            {formData.powerSocket && (
+              <Input
+                label="Jumlah Stop Kontak"
+                name="socketCount"
+                value={formData.socketCount}
+                onChange={handleChange}
+              />
+            )}
           </div>
-
-          {formData.wifi && (
-            <Input
-              label="Provider WiFi"
-              name="wifiProvider"
-              value={formData.wifiProvider}
-              onChange={handleChange}
-            />
-          )}
-
-          {formData.powerSocket && (
-            <Input
-              label="Jumlah Stop Kontak"
-              name="socketCount"
-              value={formData.socketCount}
-              onChange={handleChange}
-            />
-          )}
 
           <div>
             <label className="grid gap-2">
@@ -670,6 +688,45 @@ export default function EditCoffeeShopPage() {
               onChange={(event) => setImageFile(event.target.files[0])}
               className="w-full rounded-xl border border-dashed border-[var(--color-coffee-200)] bg-[var(--color-cream-50)] p-4 text-sm font-semibold text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--color-coffee-700)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
             />
+
+            <div>
+              <p className="text-sm font-bold text-[var(--color-coffee-700)]">
+                Galeri Coffee Shop
+              </p>
+
+              <input
+                className="w-full rounded-xl border border-dashed border-[var(--color-coffee-200)] bg-[var(--color-cream-50)] p-4 text-sm font-semibold text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--color-coffee-700)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files);
+
+                  setGalleryFiles(files);
+
+                  setGalleryPreview(
+                    files.map((file) => URL.createObjectURL(file)),
+                  );
+                }}
+              />
+            </div>
+            {galleryPreview.length > 0 && (
+              <div className="mt-4 flex gap-3 overflow-x-auto">
+                {galleryPreview.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt=""
+                    className="
+          h-24
+          w-24
+          rounded-2xl
+          object-cover
+          "
+                  />
+                ))}
+              </div>
+            )}
           </label>
 
           <div className="flex flex-col-reverse gap-3 border-t border-[var(--color-coffee-100)] pt-5 sm:flex-row sm:justify-end">

@@ -72,8 +72,9 @@ export const coffeeShopService = {
   },
 
   // 3. Fungsi menambah data Coffee Shop baru (Admin)
-  create: async (data, imageFile) => {
+  create: async (data, imageFile, galleryFiles = []) => {
     let imageUrl = "";
+    let galleryImages = [];
     let favoriteMenus = [];
 
     const validMenus =
@@ -100,6 +101,12 @@ export const coffeeShopService = {
     // Proses upload gambar ke Cloudinary jika ada file yang dipilih
     if (imageFile) {
       imageUrl = await uploadImage(imageFile);
+    }
+
+    if (galleryFiles.length > 0) {
+      galleryImages = await Promise.all(
+        galleryFiles.map((file) => uploadImage(file)),
+      );
     }
 
     // Simpan data lengkap ke Firebase Firestore
@@ -148,13 +155,15 @@ export const coffeeShopService = {
 
       imageUrl: imageUrl || "",
 
+      galleryImages: galleryImages || [],
+
       createdAt: new Date().toISOString(),
     });
 
     return docRef.id;
   },
 
-  update: async (id, updatedData, imageFile) => {
+  update: async (id, updatedData, imageFile, galleryFiles = []) => {
     try {
       let imageUrl = updatedData.imageUrl || "";
 
@@ -187,6 +196,14 @@ export const coffeeShopService = {
         );
       }
 
+      let galleryImages = updatedData.galleryImages || [];
+
+      if (galleryFiles.length > 0) {
+        galleryImages = await Promise.all(
+          galleryFiles.map((file) => uploadImage(file)),
+        );
+      }
+
       const docRef = doc(db, "coffeeShops", id);
       const { favoriteMenus: _, ...cleanData } = updatedData;
 
@@ -194,6 +211,7 @@ export const coffeeShopService = {
         ...cleanData,
         imageUrl,
         favoriteMenus,
+        galleryImages,
       });
 
       return true;

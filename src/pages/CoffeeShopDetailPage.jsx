@@ -25,6 +25,9 @@ export default function CoffeeShopDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [shop, setShop] = useState(null);
+  const allImages = [shop?.imageUrl, ...(shop?.galleryImages || [])].filter(
+    Boolean,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { user } = useAuthStore();
@@ -33,6 +36,7 @@ export default function CoffeeShopDetailPage() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [sendingReview, setSendingReview] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -58,6 +62,10 @@ export default function CoffeeShopDetailPage() {
 
     fetchDetail();
   }, [id, user]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [shop?.id]);
 
   if (loading) {
     return (
@@ -171,26 +179,114 @@ export default function CoffeeShopDetailPage() {
 
       <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <div className={`${glassPanel} overflow-hidden p-0`}>
-          <div className="aspect-[16/10] bg-[var(--color-coffee-100)]">
-            {shop.imageUrl ? (
+          <div
+            className="
+    relative
+    aspect-[16/10]
+
+    bg-[var(--color-coffee-100)]
+    "
+          >
+            {allImages.length > 0 ? (
               <img
-                src={shop.imageUrl}
+                src={allImages[activeImage]}
                 alt={shop.name}
                 className="
-                h-full
-                w-full
-                object-cover
-                transition
-                duration-700
-                hover:scale-105
-                "
+        h-full
+        w-full
+        object-cover
+        "
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-sm font-bold text-[var(--color-coffee-400)]">
+              <div
+                className="
+        flex
+        h-full
+        items-center
+        justify-center
+
+        text-sm
+        font-bold
+
+        text-[var(--color-coffee-400)]
+        "
+              >
                 Tidak ada foto
               </div>
             )}
+
+            <div
+              className="
+      absolute
+      bottom-4
+      right-4
+
+      rounded-full
+
+      bg-black/70
+
+      px-3
+      py-1
+
+      text-xs
+      font-bold
+      text-white
+      "
+            >
+              {allImages.length} Foto
+            </div>
           </div>
+
+          {allImages.length > 1 && (
+            <div
+              className="
+      mt-4
+
+      flex
+      gap-3
+
+      overflow-x-auto
+
+      px-4
+      pb-4
+      "
+            >
+              {allImages.map((image, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setActiveImage(index)}
+                  className={`
+          overflow-hidden
+
+          rounded-2xl
+
+          border-2
+
+          transition
+
+          ${
+            activeImage === index
+              ? "border-[var(--color-coffee-700)]"
+              : "border-transparent"
+          }
+          `}
+                >
+                  <img
+                    src={image}
+                    alt={`Gallery ${index + 1}`}
+                    className="
+            h-24
+            w-24
+
+            object-cover
+            "
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="p-6 md:p-8">
             <p className="text-sm font-extrabold uppercase tracking-widest text-[var(--color-coffee-500)]">
               Detail coffee shop
@@ -282,6 +378,7 @@ export default function CoffeeShopDetailPage() {
 
                   return (
                     <div
+                      key={item}
                       className="
                     inline-flex
                     items-center
@@ -517,17 +614,6 @@ export default function CoffeeShopDetailPage() {
               {favorite ? "Tersimpan" : "Simpan Favorit"}
             </button>
 
-            {shop.mapsLink && (
-              <a
-                href={shop.mapsLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[var(--color-coffee-700)] px-4 text-sm font-bold text-white hover:bg-[var(--color-coffee-800)]"
-              >
-                Buka Google Maps
-              </a>
-            )}
-
             {shop.instagramLink && (
               <a
                 href={shop.instagramLink}
@@ -549,6 +635,17 @@ export default function CoffeeShopDetailPage() {
               >
                 <Music2 size={18} />
                 TikTok
+              </a>
+            )}
+
+            {shop.mapsLink && (
+              <a
+                href={shop.mapsLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[var(--color-coffee-700)] px-4 text-sm font-bold text-white hover:bg-[var(--color-coffee-800)]"
+              >
+                Buka Google Maps
               </a>
             )}
           </div>
