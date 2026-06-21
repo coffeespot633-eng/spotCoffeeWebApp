@@ -68,9 +68,38 @@ export const bannerService = {
     return docRef.id;
   },
 
-  update: async (id, data) => {
+  update: async (id, data, imageFile) => {
+    let imageUrl = data.imageUrl || "";
+
+    if (imageFile) {
+      const formData = new FormData();
+
+      formData.append("file", imageFile);
+
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      const cloudData = await response.json();
+
+      imageUrl = cloudData.secure_url;
+    }
+
     const docRef = doc(db, "banners", id);
-    await updateDoc(docRef, data);
+
+    await updateDoc(docRef, {
+      title: data.title,
+      description: data.description,
+      coffeeShopId: data.coffeeShopId || "",
+      isActive: data.isActive,
+      imageUrl,
+    });
   },
 
   delete: async (id) => {

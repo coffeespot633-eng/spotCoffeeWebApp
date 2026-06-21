@@ -18,6 +18,8 @@ import {
   Trash2,
 } from "lucide-react";
 
+import ImageUpload from "../../components/ui/ImageUpload";
+
 export default function AddCoffeeShopPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -25,6 +27,8 @@ export default function AddCoffeeShopPage() {
   const [success, setSuccess] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
+  const [previewImage, setPreviewImage] = useState("");
+  const [galleryPreviews, setGalleryPreviews] = useState([]);
   const [selectedFacilities, setSelectedFacilities] = useState([]);
   const [selectedSuitableFor, setSelectedSuitableFor] = useState([]);
   const [formData, setFormData] = useState({
@@ -200,6 +204,23 @@ export default function AddCoffeeShopPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    setImageFile(file);
+    setPreviewImage(URL.createObjectURL(file));
+  };
+
+  const handleGalleryChange = (event) => {
+    const files = Array.from(event.target.files);
+
+    setGalleryFiles(files);
+
+    setGalleryPreviews(files.map((file) => URL.createObjectURL(file)));
   };
 
   return (
@@ -659,23 +680,59 @@ export default function AddCoffeeShopPage() {
             <span className="text-sm font-bold text-[var(--color-coffee-700)]">
               Foto Tempat
             </span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) => setImageFile(event.target.files[0])}
-              className="w-full rounded-xl border border-dashed border-[var(--color-coffee-200)] bg-[var(--color-cream-50)] p-4 text-sm font-semibold text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--color-coffee-700)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
+            <ImageUpload
+              id="thumbnail-image"
+              preview={previewImage}
+              onChange={handleImageChange}
             />
           </label>
 
           <label>Galeri Coffee Shop</label>
 
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) => setGalleryFiles(Array.from(e.target.files))}
-            className="w-full rounded-xl border border-dashed border-[var(--color-coffee-200)] bg-[var(--color-cream-50)] p-4 text-sm font-semibold text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--color-coffee-700)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
-          />
+          <div className="grid gap-3">
+            <input
+              id="gallery-images"
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={handleGalleryChange}
+            />
+
+            <label
+              htmlFor="gallery-images"
+              className="
+      flex
+      cursor-pointer
+      items-center
+      justify-center
+      rounded-2xl
+      border-2
+      border-dashed
+      border-[var(--color-coffee-200)]
+      bg-[var(--color-cream-50)]
+      p-6
+      font-semibold
+      text-[var(--color-coffee-700)]
+      hover:bg-[var(--color-coffee-100)]
+    "
+            >
+              🖼️ Pilih Foto Galeri
+            </label>
+
+            {galleryPreviews.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {galleryPreviews.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt=""
+                    className="h-24 w-full rounded-xl object-cover"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col-reverse gap-3 border-t border-[var(--color-coffee-100)] pt-5 sm:flex-row sm:justify-end">
             <Button

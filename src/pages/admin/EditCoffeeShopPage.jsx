@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import { coffeeShopService } from "../../services/coffeeShopService";
+import ImageUpload from "../../components/ui/ImageUpload";
 import {
   Wifi,
   Plug,
@@ -65,6 +66,7 @@ export default function EditCoffeeShopPage() {
   });
   const [facilities, setFacilities] = useState([]);
   const [imageFile, setImageFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
   const [galleryFiles, setGalleryFiles] = useState([]);
 
   const [galleryPreview, setGalleryPreview] = useState([]);
@@ -120,6 +122,7 @@ export default function EditCoffeeShopPage() {
           setSelectedSuitableFor(oldData.suitableFor || []);
 
           setGalleryPreview(oldData.galleryImages || []);
+          setPreviewImage(oldData.imageUrl || "");
         }
       } catch {
         Swal.fire("Error", "Gagal memuat data lama kafe.", "error");
@@ -133,6 +136,24 @@ export default function EditCoffeeShopPage() {
 
   const handleChange = (event) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    setImageFile(file);
+
+    setPreviewImage(URL.createObjectURL(file));
+  };
+
+  const handleGalleryChange = (event) => {
+    const files = Array.from(event.target.files);
+
+    setGalleryFiles(files);
+
+    setGalleryPreview(files.map((file) => URL.createObjectURL(file)));
   };
 
   const handleCheckboxChange = (facility) => {
@@ -682,51 +703,70 @@ export default function EditCoffeeShopPage() {
                 />
               </div>
             )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) => setImageFile(event.target.files[0])}
-              className="w-full rounded-xl border border-dashed border-[var(--color-coffee-200)] bg-[var(--color-cream-50)] p-4 text-sm font-semibold text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--color-coffee-700)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
+            <ImageUpload
+              id="thumbnail-image"
+              preview={previewImage}
+              onChange={handleImageChange}
             />
 
-            <div>
-              <p className="text-sm font-bold text-[var(--color-coffee-700)]">
-                Galeri Coffee Shop
-              </p>
-
+            <div className="grid gap-3">
               <input
-                className="w-full rounded-xl border border-dashed border-[var(--color-coffee-200)] bg-[var(--color-cream-50)] p-4 text-sm font-semibold text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--color-coffee-700)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
+                id="gallery-images"
                 type="file"
                 multiple
                 accept="image/*"
-                onChange={(e) => {
-                  const files = Array.from(e.target.files);
-
-                  setGalleryFiles(files);
-
-                  setGalleryPreview(
-                    files.map((file) => URL.createObjectURL(file)),
-                  );
-                }}
+                className="hidden"
+                onChange={handleGalleryChange}
               />
-            </div>
-            {galleryPreview.length > 0 && (
-              <div className="mt-4 flex gap-3 overflow-x-auto">
-                {galleryPreview.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image}
-                    alt=""
-                    className="
-          h-24
-          w-24
-          rounded-2xl
-          object-cover
+
+              <label
+                htmlFor="gallery-images"
+                className="
+      flex
+      cursor-pointer
+      items-center
+      justify-center
+
+      rounded-2xl
+      border-2
+      border-dashed
+
+      border-[var(--color-coffee-200)]
+
+      bg-[var(--color-cream-50)]
+
+      p-6
+
+      font-semibold
+
+      text-[var(--color-coffee-700)]
+
+      transition
+
+      hover:bg-[var(--color-coffee-100)]
+    "
+              >
+                🖼️ Pilih Foto Galeri
+              </label>
+
+              {galleryPreview.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {galleryPreview.map((image, index) => (
+                    <img
+                      key={index}
+                      src={image}
+                      alt=""
+                      className="
+            h-24
+            w-full
+            rounded-xl
+            object-cover
           "
-                  />
-                ))}
-              </div>
-            )}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </label>
 
           <div className="flex flex-col-reverse gap-3 border-t border-[var(--color-coffee-100)] pt-5 sm:flex-row sm:justify-end">

@@ -4,6 +4,7 @@ import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { bannerService } from "../../services/bannerService";
 import { coffeeShopService } from "../../services/coffeeShopService";
+import ImageUpload from "../../components/ui/ImageUpload";
 
 export default function AddBannerPage() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function AddBannerPage() {
   const [loading, setLoading] = useState(false);
   const [coffeeShops, setCoffeeShops] = useState([]);
   const [imageFile, setImageFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -44,6 +46,16 @@ export default function AddBannerPage() {
     }));
   };
 
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    setImageFile(file);
+
+    setPreviewImage(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -61,7 +73,7 @@ export default function AddBannerPage() {
         {
           ...formData,
         },
-        imageFile
+        imageFile,
       );
 
       setSuccess("Banner berhasil ditambahkan.");
@@ -142,15 +154,10 @@ export default function AddBannerPage() {
               onChange={handleChange}
               className="rounded-xl border border-[var(--color-coffee-200)] p-3"
             >
-              <option value="">
-                Pilih Coffee Shop
-              </option>
+              <option value="">Pilih Coffee Shop</option>
 
               {coffeeShops.map((shop) => (
-                <option
-                  key={shop.id}
-                  value={shop.id}
-                >
+                <option key={shop.id} value={shop.id}>
                   {shop.name}
                 </option>
               ))}
@@ -162,13 +169,11 @@ export default function AddBannerPage() {
               Gambar Banner
             </span>
 
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) =>
-                setImageFile(event.target.files[0])
-              }
-              className="rounded-xl border border-dashed border-[var(--color-coffee-200)] p-4"
+            <ImageUpload
+              id="banner-image"
+              label="Gambar Banner"
+              preview={previewImage}
+              onChange={handleImageChange}
             />
           </label>
 
@@ -183,7 +188,6 @@ export default function AddBannerPage() {
                 }))
               }
             />
-
             Banner Aktif
           </label>
 
@@ -197,9 +201,7 @@ export default function AddBannerPage() {
             </Button>
 
             <Button type="submit" disabled={loading}>
-              {loading
-                ? "Menyimpan..."
-                : "Simpan Banner"}
+              {loading ? "Menyimpan..." : "Simpan Banner"}
             </Button>
           </div>
         </form>
