@@ -10,8 +10,9 @@ import {
 } from "firebase/firestore";
 
 // DATA KONFIGURASI CLOUDINARY
-const CLOUDINARY_CLOUD_NAME = "ddbalrkqf";
-const CLOUDINARY_UPLOAD_PRESET = "spot_coffee_preset";
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 const uploadImage = async (file) => {
   const formData = new FormData();

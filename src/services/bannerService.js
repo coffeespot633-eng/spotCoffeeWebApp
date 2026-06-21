@@ -9,8 +9,9 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 
-const CLOUDINARY_CLOUD_NAME = "ddbalrkqf";
-const CLOUDINARY_UPLOAD_PRESET = "spot_coffee_preset";
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 export const bannerService = {
   getAll: async () => {
@@ -48,7 +49,7 @@ export const bannerService = {
         {
           method: "POST",
           body: formData,
-        }
+        },
       );
 
       const cloudData = await response.json();
@@ -78,14 +79,13 @@ export const bannerService = {
   },
 
   getActive: async () => {
-  const snapshot = await getDocs(collection(db, "banners"));
+    const snapshot = await getDocs(collection(db, "banners"));
 
-  return snapshot.docs
-    .map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
-    .filter((banner) => banner.isActive);
-},
+    return snapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .filter((banner) => banner.isActive);
+  },
 };
-
