@@ -146,8 +146,6 @@ export const coffeeShopService = {
 
       crowdLevel: data.crowdLevel || "tenang",
 
-      featured: data.featured || false,
-
       premium: data.premium || false,
 
       hasPromo: data.hasPromo || false,

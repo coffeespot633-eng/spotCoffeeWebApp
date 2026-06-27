@@ -4,7 +4,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import {
   Coffee,
-  Star,
+  Crown,
   Images,
   Users,
   MessageSquare,
@@ -25,9 +25,9 @@ export default function DashboardAdminPage() {
       icon: Coffee,
     },
     {
-      label: "Featured",
+      label: "Premium",
       value: 0,
-      icon: Star,
+      icon: Crown,
     },
     {
       label: "Banner Aktif",
@@ -63,8 +63,8 @@ export default function DashboardAdminPage() {
 
         const banners = bannerSnapshot.docs.map((doc) => doc.data());
 
-        const featuredCount = coffeeShops.filter(
-          (shop) => shop.featured,
+        const premiumCount = coffeeShops.filter(
+          (shop) => shop.premium,
         ).length;
 
         const activeBannerCount = banners.filter(
@@ -98,9 +98,9 @@ export default function DashboardAdminPage() {
           },
 
           {
-            label: "Featured",
-            value: featuredCount,
-            icon: Star,
+            label: "Premium",
+            value: premiumCount,
+            icon: Crown,
           },
 
           {

@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import {
-  Star,
   Crown,
+  Star,
   CalendarDays,
   BadgePercent,
   Wifi,
@@ -21,13 +21,6 @@ export default function CoffeeShopCard({ shop }) {
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[var(--color-coffee-100)]">
 
         <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-2">
-          {shop.featured && (
-            <div className="flex items-center gap-1 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow">
-              <Star size={12} />
-              Featured
-            </div>
-          )}
-
           {shop.premium && (
             <div className="flex items-center gap-1 rounded-full bg-purple-600 px-3 py-1 text-xs font-bold text-white shadow">
               <Crown size={12} />

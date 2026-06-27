@@ -4,7 +4,7 @@ import CoffeeShopCard from "../components/ui/CoffeeShopCard";
 import logo from "../assets/logo.png";
 import BannerSlider from "../components/home/BannerSlider";
 import SectionHeader from "../components/ui/SectionHeader";
-import { Star } from "lucide-react";
+import { Crown } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import {
   glassCard,
@@ -41,12 +41,14 @@ export default function HomePage() {
   const [suggestions, setSuggestions] =
   useState([]);
   const navigate = useNavigate();
-  const featuredShop =
-  coffeeShops.find((shop) => shop.featured) ||
-  coffeeShops[0];
-  const featuredShops = coffeeShops.filter(
-  (shop) => shop.featured
+  const premiumShops = coffeeShops.filter(
+  (shop) => shop.premium
   );
+  const randomPremiumShop = useMemo(() => {
+    if (premiumShops.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * premiumShops.length);
+    return premiumShops[randomIndex];
+  }, [premiumShops]);
 
   useEffect(() => {
     const fetchShops = async () => {
@@ -159,25 +161,20 @@ export default function HomePage() {
  const priorityShops = shops
   .filter(
     (shop) =>
-      !shop.featured &&
+      !shop.premium &&
       (
-        shop.premium ||
         shop.hasPromo ||
         shop.hasEvent
       )
   )
   .sort((a, b) => {
     const scoreA =
-      (a.featured ? 100 : 0) +
       (a.hasPromo ? 50 : 0) +
-      (a.hasEvent ? 40 : 0) +
-      (a.premium ? 30 : 0);
+      (a.hasEvent ? 40 : 0);
 
     const scoreB =
-      (b.featured ? 100 : 0) +
       (b.hasPromo ? 50 : 0) +
-      (b.hasEvent ? 40 : 0) +
-      (b.premium ? 30 : 0);
+      (b.hasEvent ? 40 : 0);
 
     return scoreB - scoreA;
   });
@@ -185,7 +182,6 @@ export default function HomePage() {
   shuffleArray(
     shops.filter(
       (shop) =>
-        !shop.featured &&
         !shop.premium &&
         !shop.hasPromo &&
         !shop.hasEvent
@@ -204,7 +200,7 @@ export default function HomePage() {
           <div>
             <img src={logo} alt="Spot Coffee" className="mb-6 h-24 w-80 max-w-full object-contain object-left" />
             <span className="inline-flex rounded-full bg-[var(--color-coffee-100)] px-4 py-2 text-xs font-extrabold uppercase tracking-widest text-[var(--color-coffee-700)]">
-              Rekomendasi coffee shop
+              {premiumShops.length > 0 ? "Premium Partner" : "Rekomendasi coffee shop"}
             </span>
             <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight tracking-tight text-[var(--color-coffee-800)] md:text-6xl">
               Temukan spot ngopi yang pas untuk kerja, nugas, meeting, atau santai.
@@ -371,38 +367,40 @@ export default function HomePage() {
             </div>
           </div>
 
-          <Link  to={featuredShop ? `/coffee-shop/${featuredShop.id}` : "#"}
-    className={`block p-4 ${glassCard} ${glassHover}`}>
-            <div className="aspect-[4/3] overflow-hidden rounded-3xl bg-[var(--color-coffee-100)]">
-              {featuredShop?.imageUrl ? (
-                <img src={featuredShop.imageUrl} alt={featuredShop.name} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm font-bold text-[var(--color-coffee-400)]">
-                  Foto coffee shop akan tampil di sini
-                </div>
-              )}
-            </div>
-            <div className="p-2 pt-5">
-              <p className="text-sm font-extrabold uppercase tracking-widest text-[var(--color-coffee-500)]">
-                Featured Coffee Shop
-              </p>
+          {randomPremiumShop && (
+            <Link
+              to={`/coffee-shop/${randomPremiumShop.id}`}
+              className={`block p-4 ${glassCard} ${glassHover}`}
+            >
+              <div className="aspect-[4/3] overflow-hidden rounded-3xl bg-[var(--color-coffee-100)]">
+                {randomPremiumShop.imageUrl ? (
+                  <img src={randomPremiumShop.imageUrl} alt={randomPremiumShop.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm font-bold text-[var(--color-coffee-400)]">
+                    Foto coffee shop akan tampil di sini
+                  </div>
+                )}
+              </div>
+              <div className="p-2 pt-5">
+                <p className="text-sm font-extrabold uppercase tracking-widest text-[var(--color-coffee-500)]">
+                  Premium Coffee Shop
+                </p>
 
-              {featuredShop?.featured && (
-                <span className="mt-2 inline-flex rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white">
-                  <Star size={14} /> Featured
+                <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-purple-600 px-3 py-1 text-xs font-bold text-white">
+                  <Crown size={14} />
+                  Premium
                 </span>
-              )}
 
-              <h2 className="mt-3 text-2xl font-black text-[var(--color-coffee-800)]">
-                {featuredShop?.name || "Tambahkan data coffee shop pertama"}
-              </h2>
+                <h2 className="mt-3 text-2xl font-black text-[var(--color-coffee-800)]">
+                  {randomPremiumShop.name}
+                </h2>
 
-              <p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-600">
-                {featuredShop?.description ||
-                  "Data dari Firestore akan muncul otomatis setelah admin menambahkan coffee shop."}
-              </p>
-            </div>
-          </Link>
+                <p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-600">
+                  {randomPremiumShop.description}
+                </p>
+              </div>
+            </Link>
+          )}
         </div>
       </section>
 
@@ -410,61 +408,53 @@ export default function HomePage() {
         <BannerSlider />
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-4 md:px-8">
-  {featuredShops.length > 0 && (
-    <>
-      <div className="mb-6">
-        <SectionHeader
-          subtitle="Featured Collection"
-          title="Coffee Shop Unggulan"
-        />
-      </div>
+      {premiumShops.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-4 md:px-8">
+          <SectionHeader
+            subtitle="Premium Collection"
+            title="Coffee Shop Premium"
+          />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {featuredShops.slice(0, 2).map((shop) => (
-          <Link
-            key={shop.id}
-            to={`/coffee-shop/${shop.id}`}
-           className={`${glassCard} ${glassHover} overflow-hidden`}
+          <div
+            className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            <div className="aspect-[16/9] overflow-hidden rounded-t-3xl">
-              <img
-                src={
-                  shop.imageUrl ||
-                  "/placeholder-coffee.jpg"
-                }
-                alt={shop.name}
-                className="
-                h-full
-                w-full
-                rounded-xl
-                object-cover
-                "
-              />
-            </div>
+            {premiumShops.map((shop) => (
+              <Link
+                key={shop.id}
+                to={`/coffee-shop/${shop.id}`}
+                className={`${glassCard} ${glassHover} flex-shrink-0 snap-start w-full sm:w-[420px] overflow-hidden`}
+              >
+                <div className="aspect-[16/9] overflow-hidden rounded-t-3xl">
+                  <img
+                    src={shop.imageUrl || "/placeholder-coffee.jpg"}
+                    alt={shop.name}
+                    className="h-full w-full rounded-xl object-cover"
+                  />
+                </div>
 
-            <div className="p-6">
-              <span className="inline-flex rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white">
-                Featured
-              </span>
+                <div className="p-6">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-purple-600 px-3 py-1 text-xs font-bold text-white">
+                    <Crown size={12} />
+                    Premium
+                  </span>
 
-              <h3 className="mt-3 text-2xl font-black text-[var(--color-coffee-800)]">
-                {shop.name}
-              </h3>
+                  <h3 className="mt-3 text-2xl font-black text-[var(--color-coffee-800)]">
+                    {shop.name}
+                  </h3>
 
-              <p className="mt-2 line-clamp-2 text-sm text-stone-600">
-                {shop.description}
-              </p>
-              <div className="mt-5 inline-flex items-center rounded-2xl bg-[var(--color-coffee-700)] px-4 py-2 text-sm font-bold text-white">
-                Lihat Detail
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </>
-  )}
-</section>
+                  <p className="mt-2 line-clamp-2 text-sm text-stone-600">
+                    {shop.description}
+                  </p>
+                  <div className="mt-5 inline-flex items-center rounded-2xl bg-[var(--color-coffee-700)] px-4 py-2 text-sm font-bold text-white">
+                    Lihat Detail
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
 <section className="mx-auto max-w-7xl px-4 py-8 md:px-8">
   <SectionHeader

@@ -8,7 +8,6 @@ import {
   Wifi,
   Plug,
   Users,
-  Star,
   Crown,
   Briefcase,
   Coffee,
@@ -59,7 +58,6 @@ export default function AddCoffeeShopPage() {
 
     crowdLevel: "tenang",
 
-    featured: false,
     premium: false,
 
     hasPromo: false,
@@ -182,7 +180,6 @@ export default function AddCoffeeShopPage() {
 
         crowdLevel: "tenang",
 
-        featured: false,
         premium: false,
 
         hasPromo: false,
@@ -644,21 +641,6 @@ export default function AddCoffeeShopPage() {
             </p>
 
             <div className="grid gap-3 md:grid-cols-2">
-              <label className="flex items-center gap-3 rounded-xl border border-[var(--color-coffee-200)] p-4">
-                <input
-                  type="checkbox"
-                  checked={formData.featured}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      featured: e.target.checked,
-                    })
-                  }
-                />
-                <Star size={18} />
-                Featured
-              </label>
-
               <label className="flex items-center gap-3 rounded-xl border border-[var(--color-coffee-200)] p-4">
                 <input
                   type="checkbox"

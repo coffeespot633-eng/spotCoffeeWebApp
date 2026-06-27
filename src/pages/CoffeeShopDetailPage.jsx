@@ -305,13 +305,6 @@ export default function CoffeeShopDetailPage() {
                 </span>
               </div>
 
-              {shop.featured && (
-                <div className="flex items-center gap-1 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white">
-                  <Star size={12} />
-                  Featured
-                </div>
-              )}
-
               {shop.premium && (
                 <div className="flex items-center gap-1 rounded-full bg-purple-600 px-3 py-1 text-xs font-bold text-white">
                   <Crown size={12} />
